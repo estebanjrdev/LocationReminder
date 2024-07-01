@@ -3,6 +3,8 @@ package com.ejrm.locationreminder.di
 
 import android.content.Context
 import androidx.room.Room
+import com.ejrm.locationreminder.data.ReminderRepository
+import com.ejrm.locationreminder.data.ReminderRepositoryImpl
 import com.ejrm.locationreminder.data.local.AppDatabase
 import com.ejrm.locationreminder.data.local.ReminderDao
 import dagger.Module
@@ -30,4 +32,17 @@ object AppModule {
     fun provideReminderDao(database: AppDatabase): ReminderDao {
         return database.reminderDao()
     }
+
+    @Provides
+    @Singleton
+    fun provideContext(@ApplicationContext appContext: Context): Context {
+        return appContext
+    }
+
+    @Provides
+    @Singleton
+    fun provideReminderRepository(reminderDao: ReminderDao): ReminderRepository {
+        return ReminderRepositoryImpl(reminderDao)
+    }
+
 }
