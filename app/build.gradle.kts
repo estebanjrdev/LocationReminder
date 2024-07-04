@@ -5,6 +5,7 @@ plugins {
     id("com.google.dagger.hilt.android")
     alias(libs.plugins.google.gms.google.services)
     alias(libs.plugins.google.firebase.crashlytics)
+    alias(libs.plugins.google.android.libraries.mapsplatform.secrets.gradle.plugin)
 }
 
 android {
@@ -42,6 +43,7 @@ android {
     }
     buildFeatures {
         compose = true
+        viewBinding = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.1"
@@ -69,14 +71,18 @@ dependencies {
     //LIVEDATA
     implementation(libs.androidx.runtime.livedata)
     //DAGGER HILT
-    implementation("com.google.dagger:hilt-android:2.51.1")
-    implementation(libs.play.services.location)
-    kapt("com.google.dagger:hilt-android-compiler:2.51.1")
-    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
+    implementation(libs.hilt.android)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.constraintlayout)
+    kapt(libs.hilt.android.compiler)
+    implementation(libs.androidx.hilt.navigation.compose)
     //ROOM
-    kapt ("androidx.room:room-compiler:2.6.1")
-    implementation ("androidx.room:room-runtime:2.6.1")
-    implementation ("androidx.room:room-ktx:2.6.1")
+    kapt (libs.androidx.room.compiler)
+    implementation (libs.androidx.room.runtime)
+    implementation (libs.androidx.room.ktx)
+
+    implementation ("com.google.maps.android:maps-compose:4.4.1")
+
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
