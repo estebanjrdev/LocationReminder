@@ -2,8 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <application
         android:name=".LocationReminderApp"
         android:allowBackup="true"
@@ -15,6 +17,8 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.LocationReminder"
         tools:targetApi="31">
+        <meta-data    android:name="com.google.android.geo.API_KEY"
+            android:value="@string/api_key_map"/>
         <activity
             android:name=".ui.screen.MainActivity"
             android:exported="true"

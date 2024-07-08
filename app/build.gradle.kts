@@ -71,6 +71,7 @@ dependencies {
     //DAGGER HILT
     implementation("com.google.dagger:hilt-android:2.51.1")
     implementation(libs.play.services.location)
+    implementation ("com.google.maps.android:maps-compose:4.4.1")
     kapt("com.google.dagger:hilt-android-compiler:2.51.1")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
     //ROOM
