@@ -4,6 +4,8 @@ import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import androidx.core.content.ContextCompat
 import com.ejrm.locationreminder.data.model.ReminderModel
 import com.google.android.gms.location.Geofence
 import com.google.android.gms.location.GeofencingClient
@@ -19,8 +21,13 @@ class GeofencingManager @Inject constructor(
 
     private val geofencingClient: GeofencingClient = LocationServices.getGeofencingClient(context)
 
-    @SuppressLint("MissingPermission")
+
     fun addGeofence(reminder: ReminderModel) {
+        if (ContextCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ||
+            ContextCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_BACKGROUND_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // Handle the case where permissions are not granted
+            return
+        }
         val geofence = Geofence.Builder()
             .setRequestId(reminder.id)
             .setCircularRegion(
@@ -39,26 +46,37 @@ class GeofencingManager @Inject constructor(
 
         val geofencePendingIntent: PendingIntent by lazy {
             val intent = Intent(context, GeofenceBroadcastReceiver::class.java)
-            PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+            PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         }
 
         geofencingClient.addGeofences(geofencingRequest, geofencePendingIntent).run {
             addOnSuccessListener {
                 // Geofence added
+                println("Geofence added successfully: ${reminder.id}")
             }
-            addOnFailureListener {
+            addOnFailureListener {e->
                 // Failed to add geofence
+                println("Failed to add geofence: ${reminder.id}")
+                e.printStackTrace()
             }
         }
     }
 
     fun removeGeofence(reminder: ReminderModel) {
+        if (ContextCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ||
+            ContextCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_BACKGROUND_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // Handle the case where permissions are not granted
+            return
+        }
         geofencingClient.removeGeofences(listOf(reminder.id)).run {
             addOnSuccessListener {
                 // Geofence removed
+                println("Geofence removed successfully: ${reminder.id}")
             }
-            addOnFailureListener {
+            addOnFailureListener { e ->
                 // Failed to remove geofence
+                println("Failed to remove geofence: ${reminder.id}")
+                e.printStackTrace()
             }
         }
     }
