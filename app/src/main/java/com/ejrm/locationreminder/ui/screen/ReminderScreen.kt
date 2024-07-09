@@ -1,130 +1,174 @@
 package com.ejrm.locationreminder.ui.screen
 
+
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.pm.PackageManager
-import android.os.Build
-import androidx.annotation.RequiresApi
+import android.widget.Toast
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.*
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.FabPosition
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.ejrm.locationreminder.R
 import com.ejrm.locationreminder.data.model.ReminderModel
 import com.ejrm.locationreminder.ui.viewmodel.ReminderViewModel
 import com.google.android.gms.location.LocationServices
-import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.model.Marker
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.*
+import kotlinx.coroutines.launch
 
-
-@RequiresApi(Build.VERSION_CODES.Q)
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun ReminderScreen(viewModel: ReminderViewModel = hiltViewModel()) {
     val reminders by viewModel.reminders.observeAsState(emptyList())
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
 
-    var reminderName by remember { mutableStateOf("") }
-    var latitude by remember { mutableStateOf("") }
-    var longitude by remember { mutableStateOf("") }
-    var radius by remember { mutableStateOf("") }
+    var currentLocation by remember { mutableStateOf<LatLng?>(null) }
 
-    LaunchedEffect(Unit) {
-        ActivityCompat.requestPermissions(
-            context as android.app.Activity,
-            arrayOf(
-                Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.ACCESS_BACKGROUND_LOCATION
-            ),
-            1
-        )
-    }
-
-    val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
-    var currentLocation by remember { mutableStateOf<com.google.android.gms.maps.model.LatLng?>(null) }
-
-    LaunchedEffect(Unit) {
-        if (ActivityCompat.checkSelfPermission(
-                context,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                context,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return@LaunchedEffect
-        }
-        fusedLocationClient.lastLocation.addOnSuccessListener { location ->
-            currentLocation = com.google.android.gms.maps.model.LatLng(location.latitude, location.longitude)
+    fun requestLocation() {
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+            fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                currentLocation = LatLng(location.latitude, location.longitude)
+            }.addOnFailureListener { e ->
+                Toast.makeText(context, "No se pudo obtener la ubicación", Toast.LENGTH_SHORT).show()
+                e.printStackTrace()
+            }
+        } else {
+            Toast.makeText(context, "Permiso de ubicación no concedido", Toast.LENGTH_SHORT).show()
         }
     }
+    LaunchedEffect(Unit) {
+        requestLocation()
+    }
+    var showDialog by remember { mutableStateOf(false) }
+    Scaffold(
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = {
+                    showDialog = true
+                },
+                modifier = Modifier.padding(16.dp),
+                content = {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_my_location),
+                        contentDescription = "Add Location"
+                    )
+                }
+            )
 
+        } ,
+        floatingActionButtonPosition = FabPosition.End, // Posición del FAB en la esquina inferior derecha
+        content = {
+            Column(modifier = Modifier.fillMaxSize()) {
+                currentLocation?.let { location ->
+                    val cameraPositionState = rememberCameraPositionState {
+                        position = CameraPosition.fromLatLngZoom(location, 15f)
+                    }
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        currentLocation?.let { location ->
-            GoogleMap(
-                modifier = Modifier.weight(1f),
-                cameraPositionState = cameraPositionState
-            ) {
-                Marker(
-                    state = MarkerState(position = location),
-                    title = "Your Location"
-                )
-            }
-        }
-
-        Column(modifier = Modifier.weight(1f)) {
-            TextField(
-                value = reminderName,
-                onValueChange = { reminderName = it },
-                label = { Text("Reminder Name") }
-            )
-            TextField(
-                value = latitude,
-                onValueChange = { latitude = it },
-                label = { Text("Latitude") }
-            )
-            TextField(
-                value = longitude,
-                onValueChange = { longitude = it },
-                label = { Text("Longitude") }
-            )
-            TextField(
-                value = radius,
-                onValueChange = { radius = it },
-                label = { Text("Radius") }
-            )
-            Button(onClick = {
-                val reminder = ReminderModel(
-                    id = reminderName.text,
-                    name = reminderName.text,
-                    latitude = latitude.text.toDouble(),
-                    longitude = longitude.text.toDouble(),
-                    radius = radius.text.toFloat()
-                )
-                viewModel.addReminder(reminder)
-            }) {
-                Text("Add Reminder")
-            }
-            LazyColumn {
-                items(reminders) { reminder ->
-                    Text(reminder.name)
+                    GoogleMap(
+                        modifier = Modifier.weight(1f),
+                        cameraPositionState = cameraPositionState
+                    ) {
+                        Marker(
+                            state = MarkerState(position = location),
+                            title = "Your Location"
+                        )
+                    }
                 }
             }
+        }
+    )
+    DialogAddReminder(showDialog,viewModel, currentLocation)
+}
+
+@Composable
+fun DialogAddReminder(showDialog: Boolean, viewModel: ReminderViewModel,currentLocation: LatLng?) {
+    var nameReminder by remember { mutableStateOf("") }
+    var radiusReminder by remember { mutableStateOf("") }
+
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+
+        if (showDialog) {
+            AlertDialog(
+                onDismissRequest = { },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            val reminder = currentLocation?.let {
+                                ReminderModel(
+                                    id = nameReminder,
+                                    name = nameReminder,
+                                    latitude = it.latitude,
+                                    longitude = currentLocation.longitude,
+                                    radius = radiusReminder.toFloat()
+                                )
+                            }
+                            if (reminder != null) {
+                                viewModel.addReminder(reminder)
+                            }
+                        }
+                    ) {
+                        Text("Agregar")
+                    }
+                },
+                dismissButton = {
+                    Button(
+                        onClick = {  }
+                    ) {
+                        Text("Cerrar")
+                    }
+                },
+                title = { Text("Agregar Recordatorio") },
+                text = {
+                    Column {
+                        TextField(
+                            value = nameReminder,
+                            onValueChange = { nameReminder = it },
+                            label = { Text("Nombre") },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        TextField(
+                            value = radiusReminder,
+                            onValueChange = { radiusReminder = it },
+                            label = { Text("Radio") },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
+            )
         }
     }
 }
