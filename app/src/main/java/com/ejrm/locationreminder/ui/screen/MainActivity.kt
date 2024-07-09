@@ -21,6 +21,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.content.ContextCompat
+import androidx.navigation.compose.rememberNavController
+import com.ejrm.locationreminder.ui.component.BottomNavigationBar
+import com.ejrm.locationreminder.ui.component.NavigationGraph
 import com.ejrm.locationreminder.ui.theme.LocationReminderTheme
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
@@ -76,7 +79,7 @@ class MainActivity : ComponentActivity() {
             }
 
             if (permissionGranted) {
-                ReminderScreen()
+                MainScreen()
             } else {
                 // Handle the case where permissions are not granted
                 Text("Location permissions are required for this app to function.")
@@ -84,5 +87,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
+
 
 
