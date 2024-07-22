@@ -1,6 +1,5 @@
 package com.ejrm.locationreminder.utils
 
-
 import androidx.room.TypeConverter
 import java.util.*
 

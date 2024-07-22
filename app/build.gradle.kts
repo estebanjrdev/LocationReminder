@@ -69,15 +69,19 @@ dependencies {
     //LIVEDATA
     implementation(libs.androidx.runtime.livedata)
     //DAGGER HILT
-    implementation("com.google.dagger:hilt-android:2.51.1")
+    implementation(libs.hilt.android)
+    kapt(libs.hilt.android.compiler)
+    implementation(libs.androidx.hilt.navigation.compose)
+    //GOOGLE MAPS
     implementation(libs.play.services.location)
-    implementation ("com.google.maps.android:maps-compose:4.4.1")
-    kapt("com.google.dagger:hilt-android-compiler:2.51.1")
-    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
+    implementation (libs.maps.compose)
+    implementation (libs.play.services.maps)
+    implementation (libs.maps.ktx)
+    implementation (libs.maps.utils.ktx)
     //ROOM
     kapt ("androidx.room:room-compiler:2.6.1")
-    implementation ("androidx.room:room-runtime:2.6.1")
-    implementation ("androidx.room:room-ktx:2.6.1")
+    implementation (libs.androidx.room.runtime)
+    implementation (libs.androidx.room.ktx)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

@@ -11,6 +11,9 @@ import com.google.android.gms.location.Geofence
 import com.google.android.gms.location.GeofencingClient
 import com.google.android.gms.location.GeofencingRequest
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.model.CircleOptions
+import com.google.android.gms.maps.model.MarkerOptions
+import com.google.maps.android.compose.Marker
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -52,6 +55,7 @@ class GeofencingManager @Inject constructor(
         geofencingClient.addGeofences(geofencingRequest, geofencePendingIntent).run {
             addOnSuccessListener {
                 // Geofence added
+
                 println("Geofence added successfully: ${reminder.id}")
             }
             addOnFailureListener {e->
