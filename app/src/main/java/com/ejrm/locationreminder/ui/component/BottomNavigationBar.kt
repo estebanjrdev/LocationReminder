@@ -41,7 +41,12 @@ fun BottomNavigationBar(navController: NavHostController) {
         val currentRoute = currentRoute(navController)
         items.forEach { item ->
             NavigationBarItem(
-                icon = { Icon(ImageVector.vectorResource(id = item.icon), contentDescription = item.title) },
+                icon = {
+                    Icon(
+                        ImageVector.vectorResource(id = item.icon),
+                        contentDescription = item.title
+                    )
+                },
                 label = { Text(text = item.title) },
                 selected = currentRoute == item.route,
                 onClick = {
@@ -62,7 +67,11 @@ fun BottomNavigationBar(navController: NavHostController) {
 
 @Composable
 fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modifier) {
-    NavHost(navController, startDestination = NavigationItem.MyLocation.route, modifier = modifier) {
+    NavHost(
+        navController,
+        startDestination = NavigationItem.MyLocation.route,
+        modifier = modifier
+    ) {
         composable(NavigationItem.MyLocation.route) {
             ReminderScreen()
         }
@@ -73,8 +82,7 @@ fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modif
 }
 
 
-
 sealed class NavigationItem(var route: String, var icon: Int, var title: String) {
-    object MyLocation : NavigationItem("mylocation", R.drawable.ic_my_location, "Mi Ubicación")
-    object SaveLocations : NavigationItem("savedlocations", R.drawable.ic_location_pin, "Ubicaciones Guardadas")
+    object MyLocation : NavigationItem("mylocation", R.drawable.ic_location_pin, "")
+    object SaveLocations : NavigationItem("savedlocations", R.drawable.ic_bookmark, "")
 }
